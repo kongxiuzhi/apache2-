@@ -1,0 +1,40 @@
+上传文件夹权限
+
+media 文件夹一般用来存放用户上传文件，static 一般用来放自己网站的js，css，图片等，在settings.py中的相关设置
+
+STATIC_URL 为静态文件的网址 STATIC_ROOT 为静态文件的根目录，
+
+MEDIA_URL 为用户上传文件夹的根目录，MEDIA_URL为对应的访问网址
+
+在settings.py中设置：
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/dev/howto/static-files/
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
+
+# upload folder
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+
+在 Linux 服务器上，用户上传目录还要设置给 www-data 用户的写权限，下面的方法比较好，不影响原来的用户的编辑。
+
+假如上传目录为 zqxt/media/uploads 文件夹,进入media文件夹，将 uploads 用户组改为www-data，并且赋予该组写权限:
+
+cd media/ # 进入media文件夹
+sudo chgrp -R www-data uploads
+sudo chmod -R g+w uploads
+
+备注：这两条命令，比直接用sudo chown -R www-data:www-data uploads 好，因为下面的命令不影响文件原来所属用户编辑文件，fedora系统应该不用设置上面的权限，但是个人强烈推荐用ubuntu,除非你对linux非常熟悉，你自己选择。
+
+
+如果你使用的是sqlite3数据库，还会提示 Attempt to write a readonly database,同样要给www-data写数据库的权限
+
+进入项目目录的上一级，比如project目录为 /home/tu/blog 那就进入 /home/tu 执行下面的命令（和修改上传文件夹类似）
+
+sudo chgrp www-data blog
+sudo chmod g+w blog
+sudo chgrp www-data blog/db.sqlite3  # 更改为你的数据库名称
+sudo chmod g+w blog/db.sqlite3
+
+备注：上面的不要加 -R ,-R是更改包括所有的子文件夹和文件，这样不安全。个人建议可以专门弄一个文件夹,用它来放sqlite3数据库，给该文件夹www-data写权限，而不是整个项目给写权限，有些文件只要读的权限就够了，给写权限会造成不安全。
